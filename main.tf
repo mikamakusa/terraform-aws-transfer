@@ -136,10 +136,14 @@ resource "aws_transfer_server" "this" {
     for_each = lookup(var.server[count.index], "endpoint_details") == null ? [] : ["endpoint_details"]
     content {
       address_allocation_ids = var.eip_id != null ? [data.aws_eip.this.id] : null
-      subnet_ids             = var.subnet_id != null ? [data.aws_subnet.this.id] : null
-      vpc_endpoint_id        = var.vpc_endpoint_id != null ? data.aws_vpc_endpoint.this.id : null
-      vpc_id                 = var.vpc_id != null ? data.aws_vpc.this.id : try(
-        element(aws_vpc.this.*.id, lookup(endpoint_details.value, "vpc_id"))
+      subnet_ids             = try(var.subnet_id != null ? [data.aws_subnet.this.id] : element(
+        aws_subnet.this.*.id, lookup(endpoint_details.value, "subnet_id"))
+      )
+      vpc_endpoint_id        = try(var.vpc_endpoint_id != null ? data.aws_vpc_endpoint.this.id : element(
+        aws_vpc_endpoint.this.*.id, lookup(endpoint_details.value, "vpc_endpoint_id"))
+      )
+      vpc_id                 = try(var.vpc_id != null ? data.aws_vpc.this.id : element(
+        aws_vpc.this.*.id, lookup(endpoint_details.value, "vpc_id"))
       )
     }
   }
@@ -165,7 +169,7 @@ resource "aws_transfer_server" "this" {
     for_each = lookup(var.server[count.index], "workflow_details") == null ? [] : ["workflow_details"]
     content {
       dynamic "on_partial_upload" {
-        for_each = ""
+        for_each = lookup(workflow_details.value, "on_partial_upload") == null ? [] : ["on_partial_upload"]
         content {
           workflow_id    = lookup(on_partial_upload.value, "workflow_id")
           execution_role = lookup(on_partial_upload.value, "execution_role")
@@ -173,7 +177,7 @@ resource "aws_transfer_server" "this" {
       }
 
       dynamic "on_upload" {
-        for_each = ""
+        for_each = lookup(workflow_details.value, "on_upload") == null ? [] : ["on_upload"]
         content {
           execution_role = lookup(on_upload.value, "execution_role")
           workflow_id    = lookup(on_upload.value, "workflow_id")

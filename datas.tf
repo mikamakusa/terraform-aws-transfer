@@ -39,3 +39,18 @@ data "aws_vpc_endpoint" "this" {
   count = var.vpc_endpoint_id ? 1 : 0
   id    = var.vpc_endpoint_id
 }
+
+data "aws_availability_zone" "this" {
+  count = var.availability_zone_id ? 1 : 0
+  id    = var.availability_zone_id
+}
+
+data "aws_security_group" "this" {
+  count = var.security_group_id ? 1 : 0
+  id    = var.security_group_id
+}
+
+data "aws_route_table" "this" {
+  count = var.route_table_id ? 1 : 0
+  id    = var.route_table_id
+}

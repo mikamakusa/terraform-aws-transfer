@@ -43,6 +43,21 @@ variable "vpc_endpoint_id" {
   default = null
 }
 
+variable "availability_zone_id" {
+  type    = string
+  default = null
+}
+
+variable "security_group_id" {
+  type    = string
+  default = null
+}
+
+variable "route_table_id" {
+  type    = string
+  default = null
+}
+
 variable "access" {
   type = list(object({
     id                  = number
@@ -398,9 +413,9 @@ variable "vpc_endpoint" {
     ip_address_type     = optional(string)
     policy              = optional(string)
     private_dns_enabled = optional(bool)
-    route_table_ids     = optional(list(string))
-    security_group_ids  = optional(list(string))
-    subnet_ids          = optional(list(string))
+    route_table_ids     = optional(list(number))
+    security_group_ids  = optional(list(number))
+    subnet_ids          = optional(list(number))
     tags                = optional(map(string))
     vpc_endpoint_type   = optional(string)
     dns_options = optional(list(object({
@@ -414,4 +429,91 @@ variable "vpc_endpoint" {
     })), [])
   }))
   default = []
+}
+
+variable "subnet" {
+  type = list(object({
+    id                                             = number
+    vpc_id                                         = optional(number)
+    assign_ipv6_address_on_creation                = optional(bool)
+    availability_zone                              = optional(string)
+    availability_zone_id                           = optional(string)
+    cidr_block                                     = optional(string)
+    customer_owned_ipv4_pool                       = optional(string)
+    enable_dns64                                   = optional(bool)
+    enable_lni_at_device_index                     = optional(bool)
+    enable_resource_name_dns_a_record_on_launch    = optional(bool)
+    enable_resource_name_dns_aaaa_record_on_launch = optional(bool)
+    ipv6_cidr_block                                = optional(string)
+    ipv6_native                                    = optional(bool)
+    map_customer_owned_ip_on_launch                = optional(bool)
+    map_public_ip_on_launch                        = optional(bool)
+    outpost_arn                                    = optional(string)
+    tags                                           = optional(map(string))
+  }))
+  default     = []
+  description = <<EOF
+EOF
+}
+
+variable "eip" {
+  type = list(object({
+    id                        = number
+    address                   = optional(string)
+    associate_with_private_ip = optional(string)
+    customer_owned_ipv4_pool  = optional(string)
+    domain                    = optional(string)
+    instance                  = optional(string)
+    network_border_group      = optional(string)
+    network_interface         = optional(string)
+    public_ipv4_pool          = optional(string)
+    tags                      = optional(map(string))
+  }))
+  default     = []
+  description = <<EOF
+EOF
+}
+
+variable "security_group" {
+  type = list(object({
+    id                     = number
+    egress                 = optional(set(string))
+    ingress                = optional(set(string))
+    name                   = optional(string)
+    name_prefix            = optional(string)
+    revoke_rules_on_delete = optional(bool)
+    tags                   = optional(map(string))
+    vpc_id                 = optional(any)
+  }))
+  default     = []
+  description = <<EOF
+EOF
+}
+
+variable "route_table" {
+  type = list(object({
+    id               = number
+    vpc_id           = optional(any)
+    propagating_vgws = optional(set(string))
+    route            = optional(set(string))
+    tags             = optional(map(string))
+    route = optional(list(object({
+      carrier_gateway_id         = optional(string)
+      cidr_block                 = optional(string)
+      core_network_arn           = optional(string)
+      destination_prefix_list_id = optional(string)
+      egress_only_gateway_id     = optional(string)
+      gateway_id                 = optional(string)
+      ipv6_cidr_block            = optional(string)
+      local_gateway_id           = optional(string)
+      nat_gateway_id             = optional(string)
+      network_interface_id       = optional(string)
+      transit_gateway_id         = optional(string)
+      vpc_endpoint_id            = optional(string)
+      vpc_peering_connection_id  = optional(string)
+    })), [])
+  }))
+  default = []
+  description = <<EOF
+EOF
 }
