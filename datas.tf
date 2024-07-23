@@ -54,3 +54,8 @@ data "aws_route_table" "this" {
   count = var.route_table_id ? 1 : 0
   id    = var.route_table_id
 }
+
+data "aws_s3_bucket" "this" {
+  count  = var.s3_bucket_id ? 1 : 0
+  bucket = var.s3_bucket_id
+}

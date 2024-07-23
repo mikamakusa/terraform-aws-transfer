@@ -6,10 +6,14 @@ resource "aws_transfer_access" "this" {
       aws_transfer_server.this.*.id, lookup(var.access[count.index], "server_id")
     )
   )
-  home_directory      = lookup(var.access[count.index], "home_directory")
+  home_directory      = format("/%s/", try(
+    var.s3_bucket_id != null ? data.aws_s3_bucket.this.id : element(
+      aws_s3_bucket.this.*.id, lookup(var.access[count.index], "s3_bucket_id")
+    )
+  ))
   home_directory_type = lookup(var.access[count.index], "home_directory_type")
   policy              = lookup(var.access[count.index], "policy")
-  role                = lookup(var.access[count.index], "role")
+  role                = var.transfer_access_role
 
   dynamic "home_directory_mappings" {
     for_each = lookup(var.access[count.index], "home_directory_mappings") == null ? [] : ["home_directory_mappings"]
@@ -31,7 +35,7 @@ resource "aws_transfer_access" "this" {
 
 resource "aws_transfer_agreement" "this" {
   count              = length(var.profile) == 0 ? 0 : length(var.agreement)
-  access_role        = lookup(var.agreement[count.index], "access_role")
+  access_role        = var.transfer_agreement_role
   base_directory     = lookup(var.agreement[count.index], "base_directory")
   local_profile_id   = try(element(aws_transfer_profile.this.*.id, lookup(var.agreement[count.index], "profile_id")))
   partner_profile_id = try(element(aws_transfer_profile.this.*.id, lookup(var.agreement[count.index], "profile_id")))
@@ -64,7 +68,7 @@ resource "aws_transfer_certificate" "this" {
 
 resource "aws_transfer_connector" "this" {
   count                = length(var.connector)
-  access_role          = lookup(var.connector[count.index], "access_role")
+  access_role          = var.transfer_connector_role
   url                  = lookup(var.connector[count.index], "url")
   logging_role         = lookup(var.connector[count.index], "logging_role")
   security_policy_name = lookup(var.connector[count.index], "security_policy_name")
@@ -117,8 +121,8 @@ resource "aws_transfer_server" "this" {
   function                         = lookup(var.server[count.index], "function")
   host_key                         = lookup(var.server[count.index], "host_key")
   identity_provider_type           = lookup(var.server[count.index], "identity_provider_type")
-  invocation_role                  = lookup(var.server[count.index], "invocation_role")
-  logging_role                     = lookup(var.server[count.index], "logging_role")
+  invocation_role                  = var.transfer_server_invocation_role
+  logging_role                     = var.transfer_server_logging_role
   post_authentication_login_banner = sensitive(lookup(var.server[count.index], "post_authentication_login_banner"))
   pre_authentication_login_banner  = sensitive(lookup(var.server[count.index], "pre_authentication_login_banner"))
   protocols                        = lookup(var.server[count.index], "protocols")
@@ -211,7 +215,7 @@ resource "aws_transfer_tag" "this" {
 
 resource "aws_transfer_user" "this" {
   count               = (length(var.server) || var.server_name != null) == 0 ? 0 : length(var.user)
-  role                = lookup(var.user[count.index], "role")
+  role                = var.transfer_user_role
   server_id           = try(
       var.server_name != null ? data.aws_transfer_server.this.id : element(
       aws_transfer_server.this.*.id, lookup(var.user[count.index], "server_id")

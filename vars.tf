@@ -58,15 +58,49 @@ variable "route_table_id" {
   default = null
 }
 
+variable "s3_bucket_id" {
+  type    = string
+  default = null
+}
+
+variable "transfer_access_role" {
+  type    = string
+  default = null
+}
+
+variable "transfer_agreement_role" {
+  type    = string
+  default = null
+}
+
+variable "transfer_connector_role" {
+  type    = string
+  default = null
+}
+
+variable "transfer_server_invocation_role" {
+  type    = string
+  default = null
+}
+
+variable "transfer_server_logging_role" {
+  type    = string
+  default = null
+}
+
+variable "transfer_user_role" {
+  type    = string
+  default = null
+}
+
 variable "access" {
   type = list(object({
     id                  = number
     external_id         = string
     server_id           = number
-    home_directory      = optional(string)
+    s3_bucket_id        = optional(any)
     home_directory_type = optional(string)
     policy              = optional(string)
-    role                = optional(string)
     home_directory_mappings = optional(list(object({
       entry  = string
       target = string
@@ -85,7 +119,6 @@ variable "access" {
 variable "agreement" {
   type = list(object({
     id             = number
-    access_role    = number
     base_directory = string
     profile_id     = number
     server_id      = number
@@ -115,7 +148,6 @@ variable "certificate" {
 variable "connector" {
   type = list(object({
     id                   = number
-    access_role          = string
     url                  = string
     logging_role         = optional(string)
     security_policy_name = optional(string)
@@ -162,8 +194,6 @@ variable "server" {
     function                         = optional(string)
     host_key                         = optional(string)
     identity_provider_type           = optional(string)
-    invocation_role                  = optional(string)
-    logging_role                     = optional(string)
     post_authentication_login_banner = optional(string)
     pre_authentication_login_banner  = optional(string)
     protocols                        = optional(list(string))
@@ -230,7 +260,6 @@ variable "tag" {
 variable "user" {
   type = list(object({
     id                  = number
-    role                = string
     server_id           = number
     user_name           = string
     home_directory      = optional(string)
@@ -513,7 +542,19 @@ variable "route_table" {
       vpc_peering_connection_id  = optional(string)
     })), [])
   }))
-  default = []
+  default     = []
   description = <<EOF
 EOF
+}
+
+variable "s3_bucket" {
+  type = list(object({
+    id                  = number
+    bucket              = optional(string)
+    bucket_prefix       = optional(string)
+    force_destroy       = optional(bool)
+    object_lock_enabled = optional(bool)
+    tags                = optional(map(string))
+  }))
+  default = {}
 }
