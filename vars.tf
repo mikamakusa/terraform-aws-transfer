@@ -556,5 +556,5 @@ variable "s3_bucket" {
     object_lock_enabled = optional(bool)
     tags                = optional(map(string))
   }))
-  default = {}
+  default = []
 }
